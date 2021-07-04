@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func scanDir(match, dirPath string,num int) []string {
+func scanDir(match, dirPath string, num int) []string {
 	var dirs []string
 	files, _ := ioutil.ReadDir(dirPath)
 	log.Printf("load dir info and scanning...")
@@ -51,6 +51,7 @@ func buildNginxConfig(fileName string, dirs []string) error {
 }
 
 func buildDockerfile(configFileName string, dirs []string) error {
+	log.Printf("build dockerfile...")
 	copyCommand := ""
 	for _, version := range dirs {
 		replaceContext := template.DockerfileCopyDirCommand
@@ -68,14 +69,17 @@ func buildDockerfile(configFileName string, dirs []string) error {
 	return ioutil.WriteFile(dockerFileName, []byte(dockerfileContext), 0755)
 }
 
-var parameterMaxNum = flag.Int("maxnum",-1,"the maximum retention versions")
-var parameterMatch = flag.String("match",`^(\d+)\.(\d+)$`,"the regular rules(default:version{#.#})")
-var parameterScanDir = flag.String("path",".","scan directory(default:work dir)")
+var parameterMaxNum = flag.Int("maxnum", -1, "the maximum retention versions")
+var parameterMatch = flag.String("match", `^(\d+)\.(\d+)$`, "the regular rules(default:version{#.#})")
+var parameterScanDir = flag.String("path", ".", "scan directory(default:work dir)")
 
 func main() {
 	flag.Parse()
-	dirs := scanDir(*parameterMatch, *parameterScanDir,*parameterMaxNum)
-	log.Printf("load dir num: %d",len(dirs))
+	dirs := scanDir(*parameterMatch, *parameterScanDir, *parameterMaxNum)
+	log.Printf("load dir num: %d", len(dirs))
+	if len(dirs) == 0 {
+		log.Fatal("the required directory was not found.")
+	}
 	const nginxConfigFileName = "nginx_default.conf"
 	err := buildNginxConfig(nginxConfigFileName, dirs)
 	if err != nil {

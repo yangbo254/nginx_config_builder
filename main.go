@@ -132,7 +132,7 @@ func buildNginxConfig(fileName string, dirs []string) error {
 	}
 	nginxContext := template.NginxDefaultConfigTemplate
 	nginxContext = strings.Replace(nginxContext, "{{version_replace}}", replaceVersion, -1)
-	nginxContext = strings.Replace(nginxContext, "{{default_path}}", "latest/", -1)
+	nginxContext = strings.Replace(nginxContext, "{{default_path}}", "latest", -1)
 
 	log.Printf("nginx config:%s", nginxContext)
 

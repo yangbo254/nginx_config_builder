@@ -34,18 +34,25 @@ server {
 	listen [::]:80;
 	server_name localhost;
 
+	gzip on;
+	gzip_min_length 1k;
+	gzip_comp_level 3;
+	gzip_types application/javascript text/css text/javascript image/jpeg image/gif image/png image/x-icon;
+	gzip_disable "MSIE [1-6]\.";
+	add_header Cache-Control no-cache;
 	underscores_in_headers on;
+	
 	location / {
 		set $is_matched 0;
 		{{version_replace}}
 		if ($cookie_api_version = "debug") {
 			set $is_matched 1;
 			root /usr/share/nginx/html/debug;
-			add_header X-matchVersion debug
+			add_header X-MatchVersion debug;
 		}
 		if ($is_matched = 0) {
 			root /usr/share/nginx/html/{{default_path}};
-			add_header X-matchVersion {{default_path}}
+			add_header X-MatchVersion {{default_path}};
 		}
 		index index.html index.htm;
 	}
@@ -55,12 +62,12 @@ server {
 		if ($http_api_version = "{{version}}") {
 			set $is_matched 1;
 			root /usr/share/nginx/html/{{path}};
-			add_header X-matchVersion {{version}}
+			add_header X-MatchVersion {{version}};
 		}
 		if ($cookie_api_version = "{{version}}") {
 			set $is_matched 1;
 			root /usr/share/nginx/html/{{path}};
-			add_header X-matchVersion {{version}}
+			add_header X-MatchVersion {{version}};
 		}
 `
 )

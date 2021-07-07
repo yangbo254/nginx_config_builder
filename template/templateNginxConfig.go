@@ -1,6 +1,5 @@
 package template
 
-
 const (
 	NginxCoreConfig = `
 user 				nginx;
@@ -39,17 +38,29 @@ server {
 	location / {
 		set $is_matched 0;
 		{{version_replace}}
+		if ($cookie_api_version = "debug") {
+			set $is_matched 1;
+			root /usr/share/nginx/html/debug;
+			add_header X-matchVersion debug
+		}
 		if ($is_matched = 0) {
 			root /usr/share/nginx/html/{{default_path}};
+			add_header X-matchVersion {{default_path}}
 		}
 		index index.html index.htm;
 	}
 }
 `
 	NginxVersionReplaceFormat = `
-		if ($http_app_version = "{{version}}") {
+		if ($http_api_version = "{{version}}") {
 			set $is_matched 1;
 			root /usr/share/nginx/html/{{path}};
+			add_header X-matchVersion {{version}}
+		}
+		if ($cookie_api_version = "{{version}}") {
+			set $is_matched 1;
+			root /usr/share/nginx/html/{{path}};
+			add_header X-matchVersion {{version}}
 		}
 `
 )

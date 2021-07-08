@@ -1,8 +1,8 @@
 package htmlReplace
 
 import (
-	"io"
 	"io/ioutil"
+	"nginx_config_builder/helper"
 	"os"
 	"strings"
 )
@@ -23,7 +23,11 @@ func BuildStartShellFile(path string, dirs []string) error {
 		shContext += "/index.html"
 		shContext += "\n"
 	}
-	shContext += `nginx -g 'daemon off;'`
+
+	shContext += "rm -rf /usr/local/lwyview/dist/*\n"
+	shContext += "cp -rf /usr/share/nginx/html/latest/* /usr/local/lwyview/dist/\n"
+
+	shContext += `exec nginx -g 'daemon off;'`
 
 	_ = os.Remove(path + "/start.sh")
 	err := ioutil.WriteFile(path+"/start.sh", []byte(shContext), 0777)
@@ -47,7 +51,7 @@ func HtmlReplace(dir, host string) error {
 	// 云领无盘
 	if strings.Contains(host, "ylwp") {
 		_ = os.Remove(dir + "/favicon.ico")
-		_, _ = copyFile(dir+"/favicon-cafe.ico", dir+"/favicon.ico")
+		_ = helper.FileCopy(dir+"/favicon-cafe.ico", dir+"/favicon.ico")
 		htmlIndexPageContext = strings.Replace(htmlIndexPageContext, SedCloudOld, SedCloudNew, -1)
 	}
 
@@ -57,24 +61,4 @@ func HtmlReplace(dir, host string) error {
 		return err
 	}
 	return nil
-}
-
-func copyFile(dstName, srcName string) (written int64, err error) {
-	src, err := os.Open(srcName)
-	if err != nil {
-		return
-	}
-	defer func(src *os.File) {
-		_ = src.Close()
-	}(src)
-
-	dst, err := os.OpenFile(dstName, os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		return
-	}
-	defer func(dst *os.File) {
-		_ = dst.Close()
-	}(dst)
-
-	return io.Copy(dst, src)
 }

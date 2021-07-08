@@ -6,14 +6,13 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
-	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"nginx_config_builder/helper"
 	"nginx_config_builder/htmlReplace"
 	"nginx_config_builder/template"
 	"os"
-	"path"
 	"regexp"
 	"sort"
 	"strings"
@@ -41,7 +40,7 @@ func scanDir(match, dirPath string, num int) []string {
 
 func gitScanVersionAndCopyDir(path, match, selectDir string, maxnum int) []string {
 	// latest目录
-	_ = dirCopy(path+"/dist", path+"/latest")
+	_ = helper.DirCopy(path+"/dist", path+"/latest")
 
 	// 其他主版本
 	repository, err := git.PlainOpen(path)
@@ -101,14 +100,14 @@ func gitScanVersionAndCopyDir(path, match, selectDir string, maxnum int) []strin
 				log.Print(err)
 				continue
 			}
-			exists, err := pathExists(verPath + "/" + selectDir)
+			exists, err := helper.PathExists(verPath + "/" + selectDir)
 			if err != nil {
 				log.Print(err)
 				continue
 			}
 			if exists {
 				log.Printf("copy from tempdir...")
-				_ = dirCopy(verPath+"/"+selectDir, path+"/"+v)
+				_ = helper.DirCopy(verPath+"/"+selectDir, path+"/"+v)
 			} else {
 				log.Printf("not found select dir,continue...")
 			}
@@ -160,82 +159,6 @@ func buildDockerfile(configFileName string, dirs []string) error {
 	const dockerFileName = "./Dockerfile"
 	_ = os.Remove(dockerFileName)
 	return ioutil.WriteFile(dockerFileName, []byte(dockerfileContext), 0755)
-}
-
-// fileCopy copies a single file from src to dst
-func fileCopy(src, dst string) error {
-	var err error
-	var srcFd *os.File
-	var dstFd *os.File
-	var srcInfo os.FileInfo
-
-	if srcFd, err = os.Open(src); err != nil {
-		return err
-	}
-	defer func(srcFd *os.File) {
-		_ = srcFd.Close()
-	}(srcFd)
-
-	if dstFd, err = os.Create(dst); err != nil {
-		return err
-	}
-	defer func(dstFd *os.File) {
-		_ = dstFd.Close()
-	}(dstFd)
-
-	if _, err = io.Copy(dstFd, srcFd); err != nil {
-		return err
-	}
-	if srcInfo, err = os.Stat(src); err != nil {
-		return err
-	}
-	return os.Chmod(dst, srcInfo.Mode())
-}
-
-// dirCopy copies a whole directory recursively
-func dirCopy(src string, dst string) error {
-	var err error
-	var fds []os.FileInfo
-	var srcInfo os.FileInfo
-
-	if srcInfo, err = os.Stat(src); err != nil {
-		return err
-	}
-
-	if err = os.MkdirAll(dst, srcInfo.Mode()); err != nil {
-		return err
-	}
-
-	if fds, err = ioutil.ReadDir(src); err != nil {
-		return err
-	}
-	for _, fd := range fds {
-		srcFp := path.Join(src, fd.Name())
-		dstFp := path.Join(dst, fd.Name())
-
-		if fd.IsDir() {
-			if err = dirCopy(srcFp, dstFp); err != nil {
-				fmt.Println(err)
-			}
-		} else {
-			if err = fileCopy(srcFp, dstFp); err != nil {
-				fmt.Println(err)
-			}
-		}
-	}
-	return nil
-}
-
-// pathExists 判断文件/文件夹是否存在
-func pathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
 }
 
 var parameterMaxNum = flag.Int("maxnum", -1, "the maximum retention versions")

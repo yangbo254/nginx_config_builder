@@ -1,6 +1,7 @@
 package template
 
 const (
+	// NginxCoreConfig Nginx核心配置信息
 	NginxCoreConfig = `
 user 				nginx;
 worker_processes 	auto;
@@ -28,6 +29,7 @@ http {
 	include /etc/nginx/conf.d/*.conf;
 }
 `
+	// NginxDefaultConfigTemplate nginx默认模板信息
 	NginxDefaultConfigTemplate = `
 server {
 	listen 80;
@@ -58,6 +60,7 @@ server {
 	}
 }
 `
+	// NginxVersionReplaceFormat nginx 版本匹配规则
 	NginxVersionReplaceFormat = `
 		if ($http_api_version = "{{version}}") {
 			set $is_matched 1;

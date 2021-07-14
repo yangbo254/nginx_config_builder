@@ -10,7 +10,7 @@ import (
 	"log"
 	"math/rand"
 	"nginx_config_builder/helper"
-	"nginx_config_builder/htmlReplace"
+	"nginx_config_builder/htmlreplace"
 	"nginx_config_builder/template"
 	"os"
 	"regexp"
@@ -32,10 +32,8 @@ func scanDir(match, dirPath string, num int) []string {
 	sort.Strings(dirs)
 	if num == -1 || len(dirs) <= num {
 		return dirs
-	} else {
-		return dirs[(len(dirs) - num):]
 	}
-
+	return dirs[(len(dirs) - num):]
 }
 
 func gitScanVersionAndCopyDir(path, match, selectDir string, maxnum int) []string {
@@ -181,7 +179,7 @@ func main() {
 	if len(dirs) == 0 {
 		log.Fatal("the required directory was not found.")
 	}
-	_ = htmlReplace.BuildStartShellFile(*parameterScanDir, dirs)
+	_ = htmlreplace.BuildStartShellFile(*parameterScanDir, dirs)
 
 	const nginxConfigFileName = "nginx_default.conf"
 	err := buildNginxConfig(nginxConfigFileName, dirs)

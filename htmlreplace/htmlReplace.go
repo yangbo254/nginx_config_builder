@@ -1,4 +1,4 @@
-package htmlReplace
+package htmlreplace
 
 import (
 	"io/ioutil"
@@ -8,11 +8,15 @@ import (
 )
 
 const (
-	SedIndex    = `https://lwy.yungengxin.com`
+	// SedIndex sed时的target信息
+	SedIndex = `https://lwy.yungengxin.com`
+	// SedCloudOld 切换平台时的查找字符串
 	SedCloudOld = `<div id=run-platform style="display: none;">lwy</div>`
+	// SedCloudNew 配合平台时的目标字符串
 	SedCloudNew = `<div id=run-platform style="display: none;">ylwp</div>`
 )
 
+// BuildStartShellFile 制作bash执行文件
 func BuildStartShellFile(path string, dirs []string) error {
 	shContext := `#!/bin/bash`
 	shContext += "\n"
@@ -37,6 +41,7 @@ func BuildStartShellFile(path string, dirs []string) error {
 	return nil
 }
 
+// HtmlReplace html平台切换
 func HtmlReplace(dir, host string) error {
 
 	// 替换主页
